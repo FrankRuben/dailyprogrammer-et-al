@@ -1,0 +1,242 @@
+REPORT zzdp226.
+
+TYPES:
+  ty_board_col TYPE c,                      " a .. g
+  ty_player    TYPE c.                      " X, O
+
+CONSTANTS:
+  gc_max_row       TYPE i VALUE 6,
+  gc_max_col       TYPE i VALUE 7,
+  gc_winning_discs TYPE i VALUE 4,
+  gc_player_x      TYPE ty_player VALUE 'X',
+  gc_player_o      TYPE ty_player VALUE 'O'.
+
+TYPES:
+  BEGIN OF ty_s_board_pos,
+    row_idx TYPE i,
+    col_idx TYPE i,
+    player  TYPE ty_player,
+  END OF ty_s_board_pos.
+
+TYPES:
+  BEGIN OF ty_s_move,
+    col_x TYPE ty_board_col,
+    col_o TYPE ty_board_col,
+  END OF ty_s_move.
+
+TYPES:
+  BEGIN OF ty_s_dir,
+    delta_row TYPE i,
+    delta_col TYPE i,
+  END OF ty_s_dir.
+
+DATA:
+  gt_board_pos TYPE TABLE OF ty_s_board_pos,
+  gt_moves     TYPE TABLE OF ty_s_move,
+  gt_dir       TYPE TABLE OF ty_s_dir,
+  gt_player    TYPE TABLE OF ty_player.
+
+IF 0 = 1.                                   " Input #1
+  gt_moves = VALUE #(                       " sure, we can read from files - but that's not in focue here
+    ( col_x = 'C' col_o = 'd' )
+    ( col_x = 'D' col_o = 'd' )
+    ( col_x = 'D' col_o = 'b' )
+    ( col_x = 'C' col_o = 'f' )
+    ( col_x = 'C' col_o = 'c' )
+    ( col_x = 'B' col_o = 'a' )
+    ( col_x = 'A' col_o = 'd' )
+    ( col_x = 'G' col_o = 'e' )
+    ( col_x = 'E' col_o = 'g' )
+  ).
+ELSE.                                       " Input #2
+  gt_moves = VALUE #(
+    ( col_x = 'D' col_o = 'd' )
+    ( col_x = 'D' col_o = 'c' )
+    ( col_x = 'C' col_o = 'c' )
+    ( col_x = 'C' col_o = 'c' )
+    ( col_x = 'G' col_o = 'f' )
+    ( col_x = 'F' col_o = 'd' )
+    ( col_x = 'F' col_o = 'f' )
+    ( col_x = 'D' col_o = 'f' )
+    ( col_x = 'A' col_o = 'a' )
+    ( col_x = 'E' col_o = 'b' )
+    ( col_x = 'E' col_o = 'e' )
+    ( col_x = 'B' col_o = 'g' )
+    ( col_x = 'G' col_o = 'g' )
+    ( col_x = 'B' col_o = 'a' )
+  ).
+ENDIF.
+
+gt_dir = VALUE #(
+  ( delta_row =  0 delta_col =  1 )
+  ( delta_row =  0 delta_col = -1 )
+  ( delta_row =  1 delta_col =  0 )
+  ( delta_row =  1 delta_col =  1 )
+  ( delta_row =  1 delta_col = -1 )
+  ( delta_row = -1 delta_col =  0 )
+  ( delta_row = -1 delta_col =  1 )
+  ( delta_row = -1 delta_col = -1 )
+).
+
+gt_player = VALUE #( ( gc_player_x ) ( gc_player_o ) ).
+
+DATA: lv_flags(8)    TYPE c.
+LOOP AT gt_moves ASSIGNING FIELD-SYMBOL(<fs_move>).
+  DATA(lv_move_idx) = sy-tabix.
+  DATA lv_have_winner TYPE abap_bool.
+
+  DATA lv_board_col TYPE ty_board_col.
+  LOOP AT gt_player ASSIGNING FIELD-SYMBOL(<fs_player>).
+    IF <fs_player> = gc_player_x.
+      lv_board_col = <fs_move>-col_x.
+    ELSE.
+      ASSERT <fs_player> = gc_player_o.
+      lv_board_col = <fs_move>-col_o.
+    ENDIF.
+
+    DATA lv_curr_col TYPE i.
+    PERFORM col_char_to_idx
+      USING     lv_board_col
+      CHANGING  lv_curr_col.
+
+    DATA lv_curr_row TYPE i.
+    PERFORM find_topmost_disc
+      USING     lv_curr_col
+      CHANGING  lv_curr_row.
+    DATA(lv_new_row) = lv_curr_row + 1.
+
+    DATA(wa_move) = VALUE ty_s_board_pos( row_idx = lv_new_row col_idx = lv_curr_col player = <fs_player> ).
+    APPEND wa_move TO gt_board_pos.         " Add current player's move to board - before we check for the winning stroke
+
+    DATA: lv_dir_idx    TYPE i,
+          lv_stroke_row TYPE i,
+          lv_stroke_col TYPE i.
+    PERFORM find_4_stroke
+      USING   <fs_player> lv_new_row lv_curr_col abap_true
+      CHANGING lv_dir_idx lv_stroke_row lv_stroke_col.
+
+    IF lv_dir_idx > 0.                      " Did we find a 4-stroke in the direction indexed by lv_dir_idx?
+      ASSERT lv_stroke_row <> 0 AND lv_stroke_col <> 0.
+
+      PERFORM display_winner
+        USING lv_move_idx <fs_player> lv_stroke_row lv_stroke_col lv_dir_idx.
+
+      lv_have_winner = abap_true.
+      EXIT.
+    ENDIF.
+  ENDLOOP.                                  " loop over players
+  IF lv_have_winner = abap_true. EXIT. ENDIF.
+ENDLOOP.                                    " loop over moves
+
+FORM col_char_to_idx
+  USING     iv_col_char TYPE ty_player
+  CHANGING  cv_col_idx  TYPE i.
+  DATA(iv_upper_board_col) = |{ iv_col_char CASE = UPPER }|.
+  SEARCH sy-abcde FOR iv_upper_board_col.
+  ASSERT sy-subrc = 0.
+  cv_col_idx = sy-fdpos + 1.
+ENDFORM.
+
+" Find topmost filled row for current col - irrespective of the player owning this disc.
+FORM find_topmost_disc
+  USING     iv_col_idx  TYPE i
+  CHANGING  cv_curr_row TYPE i.
+
+  CLEAR cv_curr_row.
+  SORT gt_board_pos BY row_idx DESCENDING.
+  READ TABLE gt_board_pos ASSIGNING FIELD-SYMBOL(<fs_board_pos>) WITH KEY col_idx = iv_col_idx.
+  IF sy-subrc = 0.
+    cv_curr_row = <fs_board_pos>-row_idx.
+  ENDIF.
+ENDFORM.
+
+FORM find_4_stroke
+  USING     iv_player          TYPE ty_player
+            iv_start_row       TYPE i
+            iv_start_col       TYPE i
+            iv_allow_recurse   TYPE abap_bool
+  CHANGING  cv_winning_dir_idx TYPE i
+            cv_stroke_row      TYPE i
+            cv_stroke_col      TYPE i.
+
+  CLEAR cv_winning_dir_idx.
+  " Check for winning position around last move: We spiral outwards over all 8 directions, and
+  " up to the distance of 3 discs, memorizing for which direction we still can find connected discs.
+  lv_flags = '--------'.  " doesn't work with ' ' and "IS INITIAL"
+  DO gc_winning_discs TIMES.
+    DATA(lv_dist) = sy-index - 1.
+    LOOP AT gt_dir ASSIGNING FIELD-SYMBOL(<fs_dir>).
+      DATA(lv_dir) = sy-tabix - 1.
+      IF lv_flags+lv_dir(1) = '-'.
+        DATA(lv_lookup_row) = iv_start_row + <fs_dir>-delta_row * lv_dist.
+        IF lv_lookup_row >= 1 OR lv_lookup_row <= gc_max_row.
+          DATA(lv_lookup_col) = iv_start_col + <fs_dir>-delta_col * lv_dist.
+          IF lv_lookup_col >= 1 OR lv_lookup_col <= gc_max_col.
+            READ TABLE gt_board_pos
+            WITH KEY row_idx = lv_lookup_row col_idx = lv_lookup_col player = iv_player
+            TRANSPORTING NO FIELDS.
+            IF sy-subrc <> 0.             " no disc or disc not owned by current player
+              lv_flags+lv_dir(1) = 'X'.   " so don't check this direction any further
+
+              " Now that's tricky: we cannot just stop here, since the new coin might not be the end-coin of a stroke.
+              " So if we're not already recursing, search again from the last coin of current player and direction.
+              " Performance is OK, otherwise we would just pass the opposite direction to the recursive call.
+              IF iv_allow_recurse = abap_true AND lv_dist > 1.
+                DATA(lv_new_lookup_row) = iv_start_row + <fs_dir>-delta_row * ( lv_dist - 1 ).
+                DATA(lv_new_lookup_col) = iv_start_col + <fs_dir>-delta_col * ( lv_dist - 1 ).
+                DATA: lv_new_dir_idx TYPE i,
+                      lv_stroke_row  TYPE i,
+                      lv_stroke_col  TYPE i.
+                PERFORM find_4_stroke
+                  USING     iv_player lv_new_lookup_row lv_new_lookup_col abap_false
+                  CHANGING  lv_new_dir_idx lv_stroke_row lv_stroke_col.
+                IF lv_new_dir_idx > 0.
+                  cv_winning_dir_idx = lv_new_dir_idx.
+                  cv_stroke_row = lv_stroke_row.
+                  cv_stroke_col = lv_stroke_col.
+                ENDIF.
+              ENDIF.
+            ENDIF.
+          ELSE.
+            lv_flags+lv_dir(1) = 'X'.     " col out of bounds, so don't check this direction any further
+          ENDIF.
+        ELSE.
+          lv_flags+lv_dir(1) = 'X'.       " row out of bounds, so don't check this direction any further
+        ENDIF.
+      ENDIF.
+      IF cv_winning_dir_idx > 0. EXIT. ENDIF.
+    ENDLOOP.
+    IF cv_winning_dir_idx > 0. EXIT. ENDIF.
+  ENDDO.
+
+  IF cv_winning_dir_idx = 0.
+    SEARCH lv_flags FOR '-'.                " spiraled out, do we still have connected discs for one direction?
+    IF sy-subrc = 0.
+      cv_winning_dir_idx = sy-fdpos + 1.    " yes, get that direction to display these discs
+      cv_stroke_row = iv_start_row.
+      cv_stroke_col = iv_start_col.
+    ENDIF.
+  ENDIF.
+ENDFORM.
+
+FORM display_winner
+  USING iv_move_idx TYPE i
+        iv_player   TYPE ty_player
+        iv_curr_row TYPE i
+        iv_curr_col TYPE i
+        iv_dir_idx  TYPE i.
+
+  READ TABLE gt_dir ASSIGNING FIELD-SYMBOL(<fs_winning_dir>) INDEX iv_dir_idx.
+
+  DATA(iv_curr_col_idx) = iv_curr_col - 1.
+  DATA(iv_col_char) = sy-abcde+iv_curr_col_idx(1).
+  WRITE: 'Winner ', <fs_player>, ' at move ', iv_move_idx, ' with ', iv_col_char && iv_curr_row.
+  DO gc_winning_discs - 1 TIMES.
+    DATA(iv_dist2) = sy-index.
+    DATA(iv_disc_row) = iv_curr_row + <fs_winning_dir>-delta_row * iv_dist2.
+    DATA(iv_disc_col) = iv_curr_col + <fs_winning_dir>-delta_col * iv_dist2.
+    iv_curr_col_idx = iv_disc_col - 1.
+    iv_col_char = sy-abcde+iv_curr_col_idx(1).
+    WRITE: iv_col_char && iv_disc_row.
+  ENDDO.
+ENDFORM.
