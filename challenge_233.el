@@ -7,7 +7,7 @@
                          (char-after pos)))
        (line-neighbours (for-current-p)
                         (let ((ln (list)))
-                          (when (looking-back "[[:graph:]]" 1) ; "\\s-" doesn't work with line break (on windows)
+                          (when (looking-back "[[:graph:]]" 1)
                             ;; looking-at will also work as expected at beginning of line (by returning nil)
                             (push (make-neighbour (- (point) 1) 'l) ln))
                           (unless for-current-p
