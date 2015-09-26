@@ -18,8 +18,8 @@
                             (push (make-neighbour (+ (point) 1) 'r) ln))
                           ln)))
     (let ((buffer-lines (count-lines (point-min) (point-max)))
-          (cc (current-column))           ;start w/ 0
-          (cl (line-number-at-pos))       ;start w/ 1
+          (cc (current-column))         ;start w/ 0
+          (cl (line-number-at-pos))     ;start w/ 1
           (n (list)))
       (save-excursion
         (save-excursion
@@ -28,7 +28,6 @@
             (setf n (append n (line-neighbours nil)))))
         (setf n (append n (line-neighbours t)))
         (save-excursion
-          ;; (when (= 0 (forward-line 1))  ;only if no lines left to move, means: we could move down
           (when (< cl buffer-lines)     ;forward-line return value is also 0 at end of buffer
             (forward-line 1)
             (move-to-column cc t)
@@ -38,14 +37,14 @@
 (defun next-state (curr-char neighbours)
   (let ((dead-char ? ))
     (labels ((alive-p (curr-char)
-                      (not (= curr-char dead-char)))) ;(not (= ?x ? ))
+                      (not (= curr-char dead-char))))
       (let ((len (length neighbours))
             (alive-p (alive-p curr-char)))
-        (cond ((and alive-p (<= len 1)) ;(<= 3 1)
+        (cond ((and alive-p (<= len 1))
                dead-char)
-              ((and alive-p (<= 2 len 3)) ;(<= 2 3 3)
+              ((and alive-p (<= 2 len 3))
                curr-char)
-              ((and alive-p (>= 4 len)) ;(>= 4 3)
+              ((and alive-p (>= 4 len))
                dead-char)
               ((and (not alive-p) (= len 3))
                (nth (random 3) neighbours))
@@ -92,7 +91,7 @@
     (insert-buffer-substring from-buffer) (goto-char (point-min))
     (redisplay)
     (sleep-for 3)
-    (dotimes (_ num-steps) (buffer-loop) (redisplay)))) ; (run-bonus-buffer 10)
+    (dotimes (_ num-steps) (buffer-loop) (redisplay))))
 
 (defvar *sample1* " He\nll\n o")
 (defvar *sample2*
@@ -105,4 +104,4 @@
     (switch-to-buffer sample-buffer nil t)
     (erase-buffer)
     (insert sample-string)
-    (buffer-loop))) ; (run-sample-buffer 1) ; (run-sample-buffer 2)
+    (buffer-loop)))
