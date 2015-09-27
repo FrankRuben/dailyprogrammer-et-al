@@ -90,7 +90,6 @@
     (erase-buffer)
     (insert-buffer-substring from-buffer) (goto-char (point-min))
     (redisplay)
-    (sleep-for 3)
     (dotimes (_ num-steps) (buffer-loop) (redisplay))))
 
 (defvar *sample1* " He\nll\n o")
