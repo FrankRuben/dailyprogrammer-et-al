@@ -149,6 +149,8 @@ int main() {
 }
 
 /*
+https://www.reddit.com/r/dailyprogrammer/comments/3kx6oh/20150914_challenge_232_easy_palindromes/cv68ffi
+
 Result:
 
 gcc -O3 main.c -o main
