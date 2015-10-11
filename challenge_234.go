@@ -27,7 +27,7 @@ func (v vampireAndFangs) String() string {
 		if i == 0 {
 			parts = append(parts, fmt.Sprintf("%d", f))
 		} else {
-			parts = append(parts, fmt.Sprintf("%d", f))
+			parts = append(parts, fmt.Sprintf("*%d", f))
 		}
 	}
 	return strings.Join(parts, "")
