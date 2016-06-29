@@ -106,4 +106,4 @@
     (buffer-loop)))
 
 ;; See https://www.reddit.com/r/dailyprogrammer/comments/3m2vvk/20150923_challenge_233_intermediate_game_of_text/cveom6v
-;; Result: http://imgur.com/JegUNgM
+;; Result: http://imgur.com/JegUNgM (needs a few seconds to start)
