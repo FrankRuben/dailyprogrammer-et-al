@@ -65,19 +65,19 @@ let eval_score skip_element_fn elements element_buf max_nb_symbols : (symbol lis
   (* here in processing sequence, they'll be added in the correct sequence according to their respective *)
   (* elements. And since we have to compute the score starting from the tail of the symbols list, we'll get that *)
   (* by reverting that list of symbols. *)
-  let rec element_loop from_idx symbols nb_symbols max_nb_symbols : symbol list =
+  let rec element_loop from_idx symbols nb_symbols : symbol list =
     if from_idx == (Array.length element_buf) then symbols
     else if nb_symbols == max_nb_symbols then symbols
     else let element = element_buf.(from_idx) in
          let skip = skip_element_fn from_idx element symbols in
-         if skip then element_loop (from_idx + 1) symbols nb_symbols max_nb_symbols
+         if skip then element_loop (from_idx + 1) symbols nb_symbols
          else try
              let idx, symbol = find_symbol elements element in
-             element_loop (from_idx + 1) (symbol :: symbols) (nb_symbols + 1) max_nb_symbols
+             element_loop (from_idx + 1) (symbol :: symbols) (nb_symbols + 1)
            with No_free_symbol_for_element err_element ->
-             element_loop (from_idx + 1) symbols nb_symbols max_nb_symbols
+             element_loop (from_idx + 1) symbols nb_symbols
   in
-  let symbols = element_loop 0 [] 0 max_nb_symbols in
+  let symbols = element_loop 0 [] 0 in
   let score = get_score symbols in      (* no need to reverse: element_loop already returns the list reversed *)
   (List.rev symbols, score)             (* but reverse list for return value, that's what the caller expects *)
 
