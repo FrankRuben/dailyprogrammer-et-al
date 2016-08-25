@@ -80,6 +80,19 @@ int main(void) {
 
 // See: https://www.reddit.com/r/dailyprogrammer/comments/4z04vj/20160822_challenge_280_easy_0_to_100_real_quick/
 
+/* Output:
+
+0111011100 -> 37 OK
+1010010000 -> -1 OK
+0011101110 -> 73 OK
+0000110000 -> 55 OK
+1111110001 -> -1 OK
+0001001000 -> 11 OK
+0000000000 -> 0 OK
+1111111111 -> 99 OK
+
+*/
+
 /*
  * Local Variables:
  * compile-command: "gcc -Wall -Werror -O2 main.c -o main && ./main"
