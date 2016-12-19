@@ -34,12 +34,6 @@ exception Missing_warp_info
 
 type square_info = Start | Blocked | Warp | Point_cnt of int
 
-let string_of_square_info = function
-  | Start -> "c"
-  | Blocked -> "x"
-  | Warp -> "o"
-  | Point_cnt(n) -> String.make 1 (Char.chr (Char.code '0' + n))
-
 let print_map (map : square_info array array) : unit =
   Array.iter (fun (squares : square_info array) ->
       Array.iter (fun (square : square_info) ->
@@ -98,7 +92,7 @@ let gather_pacgums (time : int) (start_xy : point) (warp : warp option) map : (i
           | Warp ->
             (match warp with
              | Some (warp1_xy, warp2_xy) ->
-               (* Warping is instantaniously, but we still need to step into the teleporter, so decrease time. *)
+               (* Warping is instantanious, but we still need to step into the teleporter, so decrease time. *)
                if new_xy = warp1_xy
                then gather_square_dirs (time_left - 1) warp2_xy seen_list pacgums
                else if new_xy = warp2_xy
