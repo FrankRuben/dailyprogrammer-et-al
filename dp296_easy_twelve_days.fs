@@ -45,13 +45,13 @@
         i -                     \ f n f n
         swap                    \ f n n f
         .gift                   \ f n
-    loop ;
+    loop 
+    cr ;
 
 : day-loop
     nb-days 0 ?do
         i 1+ .head
         i 1+ gift-loop
-        cr
     loop ;
 
 day-loop
