@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+    <head>
+	<title>Challenge #328 [Hard] Subset Sum Automata, animated with THREE.js</title>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/87/three.min.js"></script>
+        <script type="text/javascript">
+function start(appendAfterId, options) {
+    "use strict";
+    options             = options || {};
+    const maxColorValue = (options.sizeGrid || 8)|0;
+    const maxCellValue  = (options.sizeGrid || 16)|0;
+    const sizeGrid      = (options.sizeGrid || 100)|0;
+    const sizeX         = (options.sizeGrid || window.innerWidth)|0;
+    const sizeY         = (options.sizeGrid || window.innerHeight)|0;
+    const rule          = {
+        target:  (options.target  || (maxCellValue + 1))|0,
+        reward:  (options.reward  || +1)|0, //initial value, might be changed by adaptPenalty()
+        penalty: (options.penalty || -2)|0, //initial value, might be changed by adaptPenalty()
+        cntReward: 0,
+        cntPenalty: 0,
+        eval: function(arr) {
+            var inner = function(target, sum, i) {
+                if (sum == target) return true;
+                if (i == arr.length) return false;
+                return inner(target, sum + arr[i], i + 1) //check subset including current item
+                    || inner(target, sum, i + 1);         //check subset without current item
+            };
+            const found = inner(this.target, 0, 0);
+            if (found) this.cntReward++; else this.cntPenalty++;
+            return found ? this.reward : this.penalty;
+        },
+        adaptPenalty: function() {
+            if (this.cntReward > this.cntPenalty && this.cntPenalty > 0) {
+                this.penalty = -Math.round(this.reward * this.cntReward / this.cntPenalty);
+            } else if (this.cntReward > 0) {
+                this.reward = -Math.round(this.penalty * this.cntPenalty / this.cntReward);
+            }
+        }
+    };
+
+    function capWithOverflow(n, max) {
+        if (n >= max) return n - max;
+        if (n < 0) return max + n;
+        return n;
+    }
+
+    function capToMinMax(n, max) {
+        if (n >= max) return max;
+        if (n < 0) return 0;
+        return n;
+    }
+
+    var grid = {
+        cells: Array.from({length: sizeGrid * sizeGrid}, (v, k) => (Math.random() * maxCellValue)|0),
+        nextCellValue: function(cellIdx) {
+            const nbrCellValues = [
+                this.getNbr(cellIdx, -1, -1), this.getNbr(cellIdx, +0, -1), this.getNbr(cellIdx, +1, -1),
+                this.getNbr(cellIdx, -1, +0),                               this.getNbr(cellIdx, +1, +0),
+                this.getNbr(cellIdx, -1, +1), this.getNbr(cellIdx, +0, +1), this.getNbr(cellIdx, +1, +1)
+            ];
+            return capToMinMax(this.cells[cellIdx] + rule.eval(nbrCellValues), maxCellValue);
+        },
+        getNbr: function(cellIdx, dirX, dirY) {
+            return this.cells[capWithOverflow((cellIdx + dirX + dirY * sizeGrid), this.cells.length)];
+        },
+        getCellColorHue: function(cellIdx) {
+            return this.getColorHue(this.cells[cellIdx]);
+        },
+        getColorHue: function(cellValue) {
+            return Math.round((cellValue / maxCellValue) * maxColorValue) / maxColorValue;
+        },
+        iterate: function() {
+            this.cells.forEach((val, idx) => this.cells[idx] = this.nextCellValue(idx));
+        }
+    }
+
+    const renderer = new THREE.WebGLRenderer({antialias: options.antialias});
+    renderer.setSize(sizeX, sizeY);
+    document.getElementById(appendAfterId).appendChild(renderer.domElement);
+
+    var animationIdx = 0;
+    var geometry, scene, camera;
+    init(sizeX / sizeY);
+
+    function init(aspectRatio) {
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(35, aspectRatio,
+                                             /*near cliping plane*/ 0.1, /*far cliping plane*/ 10000);
+        geometry = new THREE.TorusGeometry(10, 4, sizeGrid, sizeGrid);
+        const material = new THREE.MeshBasicMaterial({
+            vertexColors: THREE.VertexColors,
+            side: THREE.DoubleSide // only required in case of 'backface culling' during rendering
+        });
+        const torus = new THREE.Mesh(geometry, material);
+        scene.add(torus);
+
+        const light = new THREE.PointLight(0xFFFF00);
+        light.position.set(10, 0, 10);
+        scene.add(light);
+        renderer.setClearColor(0xdddddd, 1); //set light gray background color with full opacity
+        animate();
+    }
+
+    function animate() {
+        window.requestAnimationFrame(animate);
+        for (var faceIdx = 0; faceIdx < geometry.faces.length; faceIdx++) {
+            const cellIdx = (faceIdx / 2) >>> 0;
+            const cellColorHue = grid.getCellColorHue(cellIdx);
+            const face = geometry.faces[faceIdx];
+            const faceColors = face.vertexColors;
+            if (animationIdx == 0) {
+                const threeColor = new THREE.Color(); // If we assign the same color instance to all three sides, we...
+                faceColors[0] = faceColors[1] = faceColors[2] = threeColor;
+                faceColors[0].setHSL(cellColorHue, 1, 0.5);
+            } else {
+                faceColors[0].setHSL(cellColorHue,  // ...only need to update that one - and only color - per vertex
+                                     /*saturation value between 0.0 and 1.0*/ 1,
+                                     /*lightness value between 0.0 and 1.0*/ 0.5);
+            }
+        }
+        camera.position.set(-60, Math.sin(animationIdx / 100) * 15, Math.cos(animationIdx / 100) * 45);
+        camera.lookAt(scene.position);
+        geometry.elementsNeedUpdate = true;
+        renderer.render(scene, camera);
+
+        grid.iterate();
+        if (animationIdx > 0 && (animationIdx % 100) == 0) rule.adaptPenalty();
+        animationIdx++;
+    }
+}
+        </script>
+    </head>
+    <body onload="start('header')">
+        <h1 id="header">Challenge #328 [Hard] Subset Sum Automata</h1>
+    </body>
+</html>
+
+<!-- See: https://www.reddit.com/r/dailyprogrammer/comments/6vyihu/20170825_challenge_328_hard_subset_sum_automata/ -->
+<!-- Run: open the HTML file in an up-to-browser with support for WebGL. Tested in FF 55 and Chrome 59. -->
