@@ -96,7 +96,7 @@ $input
 
 * Result
 
-Now just use =M-x org-open-at-point= to open our plot; if configured accordingly, the image will even open in Emacs.
+Now just use =M-x org-open-at-point= to open our plot, linked in the results block below; if configured accordingly, the image will even open in Emacs.
 
 #+RESULTS:
 [[file:/tmp/challenge-dot.png]]
