@@ -1,0 +1,104 @@
+* Org mode preamples
+
+/Note:/ See [[https://www.reddit.com/r/dailyprogrammer/comments/6y19v2/20170904_challenge_330_easy_surround_the_circles/][here]] for the related Daily Programmer challenge.
+
+To complicate our life a bit, we use =awk= and =graphviz=; Emacs Lisp is supported anyway:
+
+#+BEGIN_SRC emacs-lisp :results none
+(org-babel-do-load-languages
+   'org-babel-load-languages
+   '((awk . t)
+     (dot . t)))
+#+END_SRC
+
+* Implementation
+
+** Input
+
+Challenge only, no bonus.
+
+#+NAME: challenge-input
+|  1 |  1 |   2 |
+|  2 |  2 | 0.5 |
+| -1 | -3 |   2 |
+|  5 |  2 |   1 |
+
+** Compute the bounding box using =awk=
+
+#+NAME: challenge-awk-box
+#+BEGIN_SRC awk :stdin challenge-input :results value raw
+BEGIN { min_x = 100; min_y = 100; max_x = -100; max_y = -100; }
+      {
+      left = $1 - $3; right = $1 + $3
+      bottom = $2 - $3; top = $2 + $3
+      if (left < min_x) min_x = left
+      if (right > max_x) max_x = right
+      if (bottom < min_y) min_y = bottom
+      if (top > max_y) max_y = top
+      }
+END   {
+printf "(%.3f %.3f), ", min_x, min_y
+printf "(%.3f %.3f), ", min_x, max_y
+printf "(%.3f %.3f), ", max_x, max_y
+printf "(%.3f %.3f)",   max_x, min_y
+}
+#+END_SRC
+
+Our live would be simpler below in [[challenge-el-dot]] with a different output format, but what can we do - that's the
+format as requested by the challenge:
+
+#+RESULTS: challenge-awk-box
+(-3.000 -5.000), (-3.000 3.000), (6.000 3.000), (6.000 -5.000)
+
+** Generate a =graphviz= plot with the circles and the computed bounding box using Emacs Lisp
+
+While we saved a few minutes by skipping the bonus, we now spend a few more minutes for proving the result with a plot:
+
+#+NAME: challenge-el-dot
+#+BEGIN_SRC emacs-lisp :var circle-bounds=challenge-input :var rect-bounds-raw=challenge-awk-box :results output silent
+(require 'cl-lib)
+(cl-labels ((box-center-coord (coord-1 coord-2)
+                              (/ (+ coord-1 coord-2) 2))
+            (box-side-len (coord-1 coord-2)
+                          (- coord-2 coord-1))
+            (circle-id-node (idx x y radius)
+                            (let ((circle-id (format "c%d" idx)))
+                              (cons circle-id
+                                    (format "%s [ shape=circle, pos=\"%d,%d!\", height=\"%d\"]"
+                                            circle-id x y (* 2 radius)))))
+            (box-node (id x y dx dy)
+                      (format "%s [ shape=box, pos=\"%f,%f!\", width=\"%f\", height=\"%f\", label=\"\" ]"
+                              id x y dx dy))
+            (graph (layout node-defs node-ids)
+                   (format "graph {\nlayout=\"%s\"\n%s\n%s\n}"
+                           layout (mapconcat #'identity node-defs "\n") (mapconcat #'identity node-ids " "))))
+  (let* ((circle-id-node-defs (cl-loop for idx from 1
+                                       for (x y radius)
+                                       in circle-bounds
+                                       collect (circle-id-node idx x y radius)))
+         (box-node-id "b")
+         (rect-bounds (mapcar #'car (mapcar #'read-from-string (split-string rect-bounds-raw ","))))
+         (box-edge-1 (nth 0 rect-bounds))
+         (box-edge-2 (nth 2 rect-bounds))
+         (box-node-def (box-node box-node-id
+                                 (box-center-coord (car box-edge-1) (car box-edge-2))
+                                 (box-center-coord (cadr box-edge-1) (cadr box-edge-2))
+                                 (box-side-len (car box-edge-1) (car box-edge-2))
+                                 (box-side-len (cadr box-edge-1) (cadr box-edge-2)))))
+    (princ (graph "neato"
+                  (cons box-node-def (mapcar #'cdr circle-id-node-defs))
+                  (cons box-node-id (mapcar #'car circle-id-node-defs))))))
+#+END_SRC
+
+#+BEGIN_SRC dot :file /tmp/challenge-dot.png :var input=challenge-el-dot
+$input
+#+END_SRC
+
+* Result
+
+Now just use =M-x org-open-at-point= to open our plot; if configured accordingly, the image will even open in Emacs.
+
+#+RESULTS:
+[[file:/tmp/challenge-dot.png]]
+
+Screenshot of Emacs with the plot opened in an ImageMagick buffer is [[http://imgur.com/a/PydGz][here]].
