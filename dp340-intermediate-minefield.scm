@@ -182,9 +182,9 @@ M00000000000+
 (define (move field::vector rows::int cols::int pos::pair start-pos::pair dir::pair)
     (receive (next-pos move-dir)
         (match-moves dir
-                     ( 1 0  #\N)
-                     ( 0 1  #\E)
-                     (-1 0  #\S)
+                     ( 1  0  #\N)
+                     ( 0  1  #\E)
+                     (-1  0  #\S)
                      ( 0 -1 #\O))
       (cond
        ((or (< (car next-pos) 0) (>= (car next-pos) rows)
