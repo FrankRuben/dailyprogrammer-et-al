@@ -7,11 +7,11 @@
 function start(appendAfterId, options) {
     "use strict";
     options             = options || {};
-    const maxColorValue = (options.sizeGrid || 8)|0;
-    const maxCellValue  = (options.sizeGrid || 16)|0;
+    const maxColorValue = (options.maxColorValue || 8)|0;
+    const maxCellValue  = (options.maxCellValue || 16)|0;
     const sizeGrid      = (options.sizeGrid || 100)|0;
-    const sizeX         = (options.sizeGrid || window.innerWidth)|0;
-    const sizeY         = (options.sizeGrid || window.innerHeight)|0;
+    const sizeX         = (options.sizeX || window.innerWidth)|0;
+    const sizeY         = (options.sizeY || window.innerHeight)|0;
     const rule          = {
         target:  (options.target  || (maxCellValue + 1))|0,
         reward:  (options.reward  || +1)|0, //initial value, might be changed by adaptPenalty()
