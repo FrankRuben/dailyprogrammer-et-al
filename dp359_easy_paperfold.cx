@@ -1,0 +1,47 @@
+use: cx;
+
+func: convert(s Stack<Bool>)(v Stack<Bool>)
+  let: v Stack<Bool> new;
+  $s {$v ~ push} for
+  $v #t push
+  $s riter {! $v ~ push} for;
+
+func: n-fold(s Stack<Bool> n Int)(_ Stack<Bool>)
+  $n {
+    let: ns $s convert;
+    $ns $n -- recall
+  } {
+    $s
+  } if-else;
+
+func: to-string(s Stack)(_ Str)
+  $s {@1 @0 if-else} map stack str;
+
+define: n-fold-8-result [
+  1 1 0 1 1 0 0 1 1 1 0 0 1 0 0 1 1 1 0 1 1 0 0 0 1 1 0 0 1 0 0 1 1 1 0 1 1 0 0 1 1 1 0 0 1 0 0 0 1 1 0 1 1 0 0 0 1 1 0 0 1 0 0 1 1 1 0 1 1 0 0 1 1 1 0 0 1 0
+  0 1 1 1 0 1 1 0 0 0 1 1 0 0 1 0 0 0 1 1 0 1 1 0 0 1 1 1 0 0 1 0 0 0 1 1 0 1 1 0 0 0 1 1 0 0 1 0 0 1 1 1 0 1 1 0 0 1 1 1 0 0 1 0 0 1 1 1 0 1 1 0 0 0 1 1 0 0
+  1 0 0 1 1 1 0 1 1 0 0 1 1 1 0 0 1 0 0 0 1 1 0 1 1 0 0 0 1 1 0 0 1 0 0 0 1 1 0 1 1 0 0 1 1 1 0 0 1 0 0 1 1 1 0 1 1 0 0 0 1 1 0 0 1 0 0 0 1 1 0 1 1 0 0 1 1 1
+  0 0 1 0 0 0 1 1 0 1 1 0 0 0 1 1 0 0 1 0 0 1 1 1 0 1 1 0 0 1 1 1 0 0 1 0 0 1 1 1 0 1 1 0 0 0 1 1 0 0 1 0 0 1 1 1 0 1 1 0 0 1 1 1 0 0 1 0 0 0 1 1 0 1 1 0 0 0
+  1 1 0 0 1 0 0 1 1 1 0 1 1 0 0 1 1 1 0 0 1 0 0 1 1 1 0 1 1 0 0 0 1 1 0 0 1 0 0 0 1 1 0 1 1 0 0 1 1 1 0 0 1 0 0 0 1 1 0 1 1 0 0 0 1 1 0 0 1 0 0 0 1 1 0 1 1 0
+  0 1 1 1 0 0 1 0 0 1 1 1 0 1 1 0 0 0 1 1 0 0 1 0 0 1 1 1 0 1 1 0 0 1 1 1 0 0 1 0 0 0 1 1 0 1 1 0 0 0 1 1 0 0 1 0 0 0 1 1 0 1 1 0 0 1 1 1 0 0 1 0 0 1 1 1 0 1
+  1 0 0 0 1 1 0 0 1 0 0 0 1 1 0 1 1 0 0 1 1 1 0 0 1 0 0 0 1 1 0 1 1 0 0 0 1 1 0 0 1 0 0 ];
+
+// Test given test input:
+[#t] 1 n-fold to-string  [1 1 0] to-string  = check
+[#t] 2 n-fold to-string  [1 1 0 1 1 0 0] to-string  = check
+[#t] 3 n-fold to-string  [1 1 0 1 1 0 0 1 1 1 0 0 1 0 0] to-string  = check
+     
+// Test challenge input:
+[#t] 8 n-fold to-string  #n-fold-8-result to-string  = check
+     
+// Show challenge input:
+[#t] 8 n-fold to-string say
+     
+// Test whether `check` detects errors:
+// [#t] 1 n-fold to-string  [1 1 1] to-string  = check // -> Check failed
+
+// See here: 
+// https://www.reddit.com/r/dailyprogrammer/comments/8g0iil/20180430_challenge_359_easy_regular_paperfold/
+
+// Run using the following command:
+./cixl dp359_easy_paperfold.cx
