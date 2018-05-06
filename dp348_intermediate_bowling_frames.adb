@@ -61,9 +61,9 @@ end Dp348_Intermediate_Bowling;
 -- See: https://www.reddit.com/r/dailyprogrammer/comments/7so37o/20180124_challenge_348_intermediate_bowling/
 
 -- Run this using:
--- gnatmake dp348_intermediate_bowling.adb && ./dp348_intermediate_bowling "6 4 5 3 10 10 8 1 8 0 10 6 3 7 3 5 3"
--- gnatmake dp348_intermediate_bowling.adb && ./dp348_intermediate_bowling "9  0  9  0  9  0  9  0  9  0  9  0  9  0  9  0  9  0  9  0"
--- gnatmake dp348_intermediate_bowling.adb && ./dp348_intermediate_bowling "10 10 10 10 10 10 10 10 10 10 10 10"
--- gnatmake dp348_intermediate_bowling.adb && ./dp348_intermediate_bowling "5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5"
--- gnatmake dp348_intermediate_bowling.adb && ./dp348_intermediate_bowling "10 3  7  6  1  10 10 10 2  8  9  0  7  3  10 10
--- gnatmake dp348_intermediate_bowling.adb && ./dp348_intermediate_bowling "9  0  3  7  6  1  3  7  8  1  5  5  0  10 8  0  7  3  8  2  8"
+-- gnatmake dp348_intermediate_bowling_frames.adb && ./dp348_intermediate_bowling_frames "6 4 5 3 10 10 8 1 8 0 10 6 3 7 3 5 3"
+-- gnatmake dp348_intermediate_bowling_frames.adb && ./dp348_intermediate_bowling_frames "9  0  9  0  9  0  9  0  9  0  9  0  9  0  9  0  9  0  9  0"
+-- gnatmake dp348_intermediate_bowling_frames.adb && ./dp348_intermediate_bowling_frames "10 10 10 10 10 10 10 10 10 10 10 10"
+-- gnatmake dp348_intermediate_bowling_frames.adb && ./dp348_intermediate_bowling_frames "5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5  5"
+-- gnatmake dp348_intermediate_bowling_frames.adb && ./dp348_intermediate_bowling_frames "10 3  7  6  1  10 10 10 2  8  9  0  7  3  10 10
+-- gnatmake dp348_intermediate_bowling_frames.adb && ./dp348_intermediate_bowling_frames "9  0  3  7  6  1  3  7  8  1  5  5  0  10 8  0  7  3  8  2  8"
