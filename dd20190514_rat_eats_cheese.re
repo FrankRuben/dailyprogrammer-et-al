@@ -63,5 +63,5 @@ let main = () => {
 main()
 
 // See here: https://programmingpraxis.com/2019/05/14/
-// Run as: dune exec ./dd20190514_rat_eats_cheese_as_posted.exe
+// Run as: dune exec ./dd20190514_rat_eats_cheese.exe
 // Output: Maximum amount of cheese: 3
