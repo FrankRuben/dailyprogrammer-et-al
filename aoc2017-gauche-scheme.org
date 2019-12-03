@@ -25,9 +25,6 @@ M-x org-babel-tangle=.
 - And a repo with optimized solutions in C:
   https://github.com/Voltara/advent2017-fast
 
-- anonymous user #221784
-- 221784-20171201-212211d3
-
 *** Helpers
 
 - Peter Norwig's Python Notebook for solutions for 2016:
