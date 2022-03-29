@@ -8,7 +8,7 @@ procedure Dp348_Intermediate_Bowling is
    package Tio renames Ada.Text_IO;
 
    subtype Nb_Attempts_Type is Natural range 0 .. 2; -- we reset to 0, then throw twice
-   subtype Nb_Pins_Type is Natural range 0 .. 10;    -- we can have attemmpts with 0 pins
+   subtype Nb_Pins_Type is Natural range 0 .. 10;    -- we can have attempts with 0 pins
    package Nio is new Tio.Integer_IO (Nb_Pins_Type);
 
    procedure Put_Frame (Line_Str : String) is
